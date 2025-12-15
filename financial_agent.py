@@ -30,3 +30,15 @@ finacial_agent = Agent(
   show_tool_calls=True,
   markdown=True,
 )
+
+multi_ai_agent = Agent(
+  team=[web_search_agent, finacial_agent],
+  instructions=[
+    "Collaborate to provide comprehensive financial advice.",
+    "The WebSearchAgent is responsible for gathering the latest news and trends using web search.",
+    "The FinancialAgent analyzes market data and provides investment advice based on the information gathered.",
+    "Communicate clearly and cite sources when providing information."
+  ],
+  show_tool_calls=True,
+  markdown=True,
+)
