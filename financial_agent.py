@@ -42,3 +42,6 @@ multi_ai_agent = Agent(
   show_tool_calls=True,
   markdown=True,
 )
+
+multi_ai_agent.print_response("Summarize analyst recommendations and share the latest news about Apple Inc. (AAPL). Provide investment advice based on this information.")
+
