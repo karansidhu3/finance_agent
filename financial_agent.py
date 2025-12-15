@@ -1,13 +1,19 @@
 from phi.agent import Agent
 from phi.model.groq import Groq
-from phi.tools.yfinance import YFinanceTool
+from phi.tools.yfinance import YFinanceTools
 from phi.tools.duckduckgo import DuckDuckGo
+import openai
+
+import os
+from dotenv import load_dotenv
+load_dotenv()
+openai.api_key=os.getenv("OPENAI_API_KEY")
 
 
 web_search_agent = Agent(
   name="WebSearchAgent",
   role="A financial agent that uses web search to gather information about financial markets and companies.",
-  model=Groq(id="llama3-groq-70b-8192-tool-use-preview"),
+  model=Groq(id="llama-3.1-8b-instant"),
   tools=[DuckDuckGo(),],
   instructions=["Always provide sources for web search results."],
   show_tool_calls=True,
@@ -17,9 +23,9 @@ web_search_agent = Agent(
 finacial_agent = Agent(
   name="FinancialAgent",
   role="A financial agent that provides investment advice based on market data and trends.",
-  model=Groq(id="llama3-groq-70b-8192-tool-use-preview"),
+  model=Groq(id="llama-3.1-8b-instant"),
   tools=[
-    YFinanceTool(stock_price=True, analyst_recommendations=True, stock_fundamentals=True, company_news=True),
+    YFinanceTools(stock_price=True, analyst_recommendations=True, stock_fundamentals=True, company_news=True),
   ],
   instructions=[
     "Use web search to gather the latest news and trends about financial markets and companies.",
