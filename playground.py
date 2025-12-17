@@ -1,48 +1,93 @@
-import openai
 from phi.agent import Agent
-import phi.api
 from phi.model.openai import OpenAIChat
-from phi.tools.yfinance import YFinanceTools
-from phi.tools.duckduckgo import DuckDuckGo
-from dotenv import load_dotenv
 from phi.model.groq import Groq
-
-import os
-import phi
+from phi.tools.duckduckgo import DuckDuckGo
+from phi.tools.yfinance import YFinanceTools
 from phi.playground import Playground, serve_playground_app
 
+from dotenv import load_dotenv
+import os
+
+# ---------------------------------------------------------------------
+# Environment
+# ---------------------------------------------------------------------
 load_dotenv()
+os.environ["OPENAI_API_KEY"] = os.getenv("OPENAI_API_KEY")
+os.environ["GROQ_API_KEY"] = os.getenv("GROQ_API_KEY")
 
-phi.api = os.getenv("PHI_API_KEY")
-
+# ---------------------------------------------------------------------
+# Agent 1: Web Search Agent (TOOLS → OpenAI ONLY)
+# ---------------------------------------------------------------------
 web_search_agent = Agent(
-  name="WebSearchAgent",
-  role="A financial agent that uses web search to gather information about financial markets and companies.",
-  model=Groq(id="llama-3.1-8b-instant"),
-  tools=[DuckDuckGo(),],
-  instructions=["Always provide sources for web search results."],
-  show_tool_calls=True,
-  markdown=True,
+    name="WebSearchAgent",
+    role="Fetches the most recent financial and company-specific news.",
+    model=OpenAIChat(model="gpt-4o-mini"),
+    tools=[DuckDuckGo()],
+    instructions=[
+        "Search for the most recent news only.",
+        "Summarize results clearly.",
+        "Always include source citations.",
+        "Do NOT provide opinions or investment advice."
+    ],
+    show_tool_calls=True,
+    markdown=True,
 )
 
-finacial_agent = Agent(
-  name="FinancialAgent",
-  role="A financial agent that provides investment advice based on market data and trends.",
-  model=Groq(id="llama-3.1-8b-instant"),
-  tools=[
-    YFinanceTools(stock_price=True, analyst_recommendations=True, stock_fundamentals=True, company_news=True),
-  ],
-  instructions=[
-    "Use web search to gather the latest news and trends about financial markets and companies.",
-    "Analyze market data using the YFinance tool to provide informed investment advice.",
-    "Always cite your sources when providing information from web searches.",
-    "Use tables to display data clearly."
-  ],
-  show_tool_calls=True,
-  markdown=True,
+# ---------------------------------------------------------------------
+# Agent 2: Financial Data Agent (TOOLS → OpenAI ONLY)
+# ---------------------------------------------------------------------
+financial_data_agent = Agent(
+    name="FinancialDataAgent",
+    role="Retrieves and summarizes structured market and analyst data.",
+    model=OpenAIChat(model="gpt-4o-mini"),
+    tools=[
+        YFinanceTools(
+            stock_price=True,
+            analyst_recommendations=True,
+            stock_fundamentals=True,
+            company_news=True,
+        )
+    ],
+    instructions=[
+        "Present analyst recommendations and fundamentals.",
+        "Use tables where appropriate.",
+        "Remain factual and objective.",
+        "Do NOT provide investment advice."
+    ],
+    show_tool_calls=True,
+    markdown=True,
 )
 
-app=Playground(agents=[finacial_agent, web_search_agent]).get_app()
+# ---------------------------------------------------------------------
+# Agent 3: Investment Reasoning Agent (NO TOOLS → Groq)
+# ---------------------------------------------------------------------
+investment_reasoning_agent = Agent(
+    name="InvestmentReasoningAgent",
+    role="Synthesizes news and financial data into investment insights.",
+    model=Groq(id="llama-3.1-8b-instant"),
+    instructions=[
+        "Combine analyst sentiment with recent news.",
+        "Highlight risks, opportunities, and uncertainty.",
+        "Provide a high-level investment outlook (not financial advice).",
+        "Be concise, structured, and professional."
+    ],
+    markdown=True,
+)
 
+# ---------------------------------------------------------------------
+# Playground App
+# ---------------------------------------------------------------------
+app = Playground(
+    agents=[
+        web_search_agent,
+        financial_data_agent,
+        investment_reasoning_agent,
+    ]
+).get_app()
+
+
+# ---------------------------------------------------------------------
+# Run
+# ---------------------------------------------------------------------
 if __name__ == "__main__":
     serve_playground_app("playground:app", reload=True)
