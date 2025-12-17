@@ -3,21 +3,6 @@
 A **production-grade multi-agent AI system** that combines **real-time financial news, structured market data, and advanced reasoning models** to provide comprehensive investment insights. Built using **Phi**, **OpenAI**, **Groq**, and finance tools like **YFinance** and **DuckDuckGo**.
 
 ---
-
-## Table of Contents
-
-- [Project Overview](#project-overview)
-- [Architecture](#architecture)
-- [Features](#features)
-- [Getting Started](#getting-started)
-- [Usage](#usage)
-- [Project Structure](#project-structure)
-- [Technologies](#technologies)
-- [Future Improvements](#future-improvements)
-- [License](#license)
-
----
-
 ## Project Overview
 
 This system is composed of **three specialized agents**:
